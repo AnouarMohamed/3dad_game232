@@ -1,60 +1,13 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { Sparkles } from 'lucide-react';
 
 import { MOON_POEMS } from '../constants/moonPoems';
-import { fireConfetti } from '../lib/confetti';
 import { cn } from '../lib/cn';
 import { StickmanSprite } from './StickmanSprite';
-
-type MoonGamePhase = 'CHOOSING' | 'MOVING' | 'REVEALING';
-
-const REVEAL_DELAY_MS = 1500;
-const CARD_OFFSET_X = 200;
-const CARD_COUNT = MOON_POEMS.length;
-const CARD_CENTER_INDEX = (CARD_COUNT - 1) / 2;
+import { CARD_COUNT, useMoonGame } from './moon-game/useMoonGame';
 
 export function MoonGame() {
-  const [phase, setPhase] = useState<MoonGamePhase>('CHOOSING');
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
-  const [l3dadX, setL3dadX] = useState(0);
-  const revealTimeoutRef = useRef<number | null>(null);
-
-  useEffect(
-    () => () => {
-      if (revealTimeoutRef.current !== null) {
-        clearTimeout(revealTimeoutRef.current);
-      }
-    },
-    [],
-  );
-
-  const revealChoice = useCallback(() => {
-    setPhase('REVEALING');
-    void fireConfetti({
-      particleCount: 40,
-      spread: 60,
-      origin: { y: 0.7 },
-      colors: ['#ff69b4', '#ff1493', '#ffc0cb'],
-    });
-  }, []);
-
-  const handleChoice = useCallback((index: number) => {
-    setSelectedIndex(index);
-    setPhase('MOVING');
-    setL3dadX((index - CARD_CENTER_INDEX) * CARD_OFFSET_X);
-
-    if (revealTimeoutRef.current !== null) {
-      clearTimeout(revealTimeoutRef.current);
-    }
-    revealTimeoutRef.current = window.setTimeout(revealChoice, REVEAL_DELAY_MS);
-  }, [revealChoice]);
-
-  const chooseAnother = useCallback(() => {
-    setPhase('CHOOSING');
-    setSelectedIndex(null);
-    setL3dadX(0);
-  }, []);
+  const { phase, selectedIndex, l3dadX, handleChoice, chooseAnother } = useMoonGame();
 
   return (
     <div className="flex flex-col items-center w-full">
@@ -71,20 +24,25 @@ export function MoonGame() {
       <div className="relative w-full h-[400px] flex flex-col items-center">
         {phase === 'CHOOSING' && (
           <div className="flex gap-6 md:gap-12 z-10">
-            {Array.from({ length: CARD_COUNT }, (_, i) => (
-              <motion.div
-                key={i}
+            {Array.from({ length: CARD_COUNT }, (_, index) => (
+              <motion.button
+                key={index}
+                type="button"
                 whileHover={{ scale: 1.05, y: -10 }}
-                onClick={() => handleChoice(i)}
+                onClick={() => handleChoice(index)}
                 className={cn(
                   'w-32 h-48 md:w-44 md:h-64 glass rounded-3xl border-2 border-white/20 flex items-center justify-center cursor-pointer hover:border-dream-pink/50 transition-all shadow-xl relative group overflow-hidden',
-                  i === 2 && 'border-dream-purple/30',
+                  index === 2 && 'border-dream-purple/30',
                 )}
               >
                 <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                <span className="text-white font-handwriting text-5xl md:text-7xl opacity-30 group-hover:opacity-100 transition-opacity">?</span>
-                {i === 2 && <Sparkles className="absolute top-4 right-4 text-dream-purple opacity-50" size={20} />}
-              </motion.div>
+                <span className="text-white font-handwriting text-5xl md:text-7xl opacity-30 group-hover:opacity-100 transition-opacity">
+                  ?
+                </span>
+                {index === 2 && (
+                  <Sparkles className="absolute top-4 right-4 text-dream-purple opacity-50" size={20} />
+                )}
+              </motion.button>
             ))}
           </div>
         )}
@@ -94,7 +52,11 @@ export function MoonGame() {
           transition={{ duration: 1.5, ease: 'easeInOut' }}
           className="absolute bottom-0"
         >
-          <StickmanSprite walking={phase === 'MOVING'} blushing={phase === 'REVEALING'} cheering={phase === 'REVEALING'} />
+          <StickmanSprite
+            walking={phase === 'MOVING'}
+            blushing={phase === 'REVEALING'}
+            cheering={phase === 'REVEALING'}
+          />
           <AnimatePresence>
             {phase === 'REVEALING' && (
               <motion.div
@@ -122,6 +84,7 @@ export function MoonGame() {
               {MOON_POEMS[selectedIndex].text}
             </p>
             <button
+              type="button"
               onClick={chooseAnother}
               className="mt-8 px-6 py-2 bg-white/10 hover:bg-white/20 rounded-full text-dream-pink font-bold transition-all text-lg"
             >

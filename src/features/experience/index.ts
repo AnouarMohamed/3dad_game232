@@ -1,5 +1,6 @@
 export { AtmosphereBackground } from './AtmosphereBackground';
 export { CharacterStage } from './CharacterStage';
+export { ExperienceFooter } from './ExperienceFooter';
 export { FloatingDecorations } from './FloatingDecorations';
 export { GameHeader } from './GameHeader';
 export { GamePanel } from './GamePanel';

@@ -4,11 +4,11 @@
  */
 
 import { Suspense, lazy, useState } from 'react';
-import { Volume2, VolumeX } from 'lucide-react';
 
 import {
   AtmosphereBackground,
   CharacterStage,
+  ExperienceFooter,
   FloatingDecorations,
   GameHeader,
   GamePanel,
@@ -31,11 +31,14 @@ export default function App() {
     l3dadThought,
     isDialogueState,
     showCharacter,
+    canSkipWalking,
     activeLine,
     startWalking,
+    skipWalking,
     handleL3dadClick,
     nextDialogue,
     handleGameComplete,
+    resetExperience,
   } = useGameFlow();
 
   const {
@@ -50,10 +53,12 @@ export default function App() {
     particleConfigs,
   } = useParallax(gameState !== 'MINIGAME');
 
+  const toggleMuted = () => setIsMuted((prev) => !prev);
+
   return (
     <div
       onMouseMove={handleGlobalMouseMove}
-      className="min-h-screen bg-[#050505] font-sans text-slate-200 overflow-hidden selection:bg-purple-900/50 relative"
+      className="min-h-screen bg-[#050505] font-sans text-slate-200 overflow-x-hidden selection:bg-purple-900/50 relative"
     >
       <AtmosphereBackground
         bgX1={bgX1}
@@ -67,7 +72,7 @@ export default function App() {
       />
       <FloatingDecorations />
 
-      <main className="relative z-10 max-w-2xl mx-auto px-6 pt-20 pb-10 flex flex-col items-center min-h-screen">
+      <main className="relative z-10 max-w-2xl mx-auto px-4 sm:px-6 pt-14 sm:pt-20 pb-[calc(2.5rem+env(safe-area-inset-bottom))] flex flex-col items-center min-h-screen">
         <GameHeader />
 
         <div className="w-full flex-grow flex flex-col items-center justify-center relative">
@@ -80,9 +85,11 @@ export default function App() {
               <CharacterStage
                 gameState={gameState}
                 showCharacter={showCharacter}
+                canSkipWalking={canSkipWalking}
                 blushLevel={blushLevel}
                 l3dadThought={l3dadThought}
                 onStartWalking={startWalking}
+                onSkipWalking={skipWalking}
                 onCharacterClick={handleL3dadClick}
               />
               <GamePanel
@@ -97,14 +104,7 @@ export default function App() {
           )}
         </div>
 
-        <footer className="mt-auto pt-10 flex justify-center gap-4 relative z-20">
-          <button
-            onClick={() => setIsMuted((prev) => !prev)}
-            className="p-3 glass rounded-full text-slate-400 hover:bg-white/10 transition-colors"
-          >
-            {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
-          </button>
-        </footer>
+        <ExperienceFooter isMuted={isMuted} onReset={resetExperience} onToggleMute={toggleMuted} />
       </main>
     </div>
   );

@@ -2,6 +2,8 @@ import { memo } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 
 import { cn } from '../lib/cn';
+import { BlinkingEye } from './stickman/BlinkingEye';
+import { buildStickmanMotion } from './stickman/motion';
 
 interface StickmanSpriteProps {
   className?: string;
@@ -13,13 +15,6 @@ interface StickmanSpriteProps {
   speed?: number;
 }
 
-const BLINK_ANIMATION = { scaleY: [1, 1, 0.1, 1, 1] };
-const BLINK_TRANSITION = { repeat: Infinity, duration: 3, times: [0, 0.8, 0.85, 0.9, 1] };
-
-function BlinkingEye() {
-  return <motion.div className="w-3.5 h-3.5 bg-slate-900 rounded-full shadow-sm" animate={BLINK_ANIMATION} transition={BLINK_TRANSITION} />;
-}
-
 function StickmanSpriteComponent({
   className,
   cheering = false,
@@ -29,56 +24,16 @@ function StickmanSpriteComponent({
   onClick,
   speed = 0,
 }: StickmanSpriteProps) {
-  const isIdle = !walking && !cheering;
-  const walkDuration = Math.max(0.1, 0.5 - speed * 0.045);
-  const leanAngle = walking ? Math.min(25, speed * 3) : 0;
-  const stretchY = walking ? 1 + speed * 0.02 : 1;
-  const squashX = walking ? 1 - speed * 0.01 : 1;
-  const cycleDuration = cheering ? 0.4 : walking ? walkDuration : 3;
-
-  const rootAnimate = cheering
-    ? { y: [0, -40, 0], rotate: [0, -5, 5, 0], scaleX: 1, scaleY: 1 }
-    : walking
-      ? { rotate: leanAngle, y: [0, -6, 0], scaleX: squashX, scaleY: stretchY }
-      : { y: [0, -3, 0], rotate: 0, scaleX: [1, 1.02, 1], scaleY: [1, 0.98, 1] };
-  const rootTransition = cheering
-    ? { repeat: Infinity, duration: 0.4, ease: 'easeOut' }
-    : walking
-      ? {
-          rotate: { type: 'spring', stiffness: 150, damping: 12 },
-          y: { repeat: Infinity, duration: walkDuration, ease: 'easeInOut' },
-          scaleX: { duration: 0.2 },
-          scaleY: { duration: 0.2 },
-        }
-      : { repeat: Infinity, duration: 3, ease: 'easeInOut' };
-
-  const armAnimate = cheering
-    ? { rotate: [45, 135, 45], y: [-10, -20, -10] }
-    : walking
-      ? {
-          rotate: [-30 - speed * 5, 30 + speed * 5, -30 - speed * 5],
-          x: [-2 - speed, 2 + speed, -2 - speed],
-        }
-      : { rotate: [0, 8, 0], y: [0, -2, 0] };
-
-  const legs = [
-    {
-      id: 'left',
-      animate: walking
-        ? { rotate: [40 + speed * 4, -40 - speed * 4, 40 + speed * 4], y: [0, -4, 0] }
-        : cheering
-          ? { rotate: [10, -10, 10] }
-          : { rotate: [0, 2, 0], scaleY: [1, 0.95, 1] },
-    },
-    {
-      id: 'right',
-      animate: walking
-        ? { rotate: [-40 - speed * 4, 40 + speed * 4, -40 - speed * 4], y: [0, -4, 0] }
-        : cheering
-          ? { rotate: [-10, 10, -10] }
-          : { rotate: [0, -2, 0], scaleY: [1, 0.95, 1] },
-    },
-  ];
+  const {
+    walkDuration,
+    cycleDuration,
+    legDuration,
+    rootAnimate,
+    rootTransition,
+    headAnimate,
+    armAnimate,
+    legs,
+  } = buildStickmanMotion({ cheering, walking, speed });
 
   return (
     <motion.div
@@ -96,18 +51,8 @@ function StickmanSpriteComponent({
 
       <motion.div
         className="w-24 h-24 border-4 border-white rounded-full bg-white relative flex items-center justify-center overflow-hidden shadow-[0_0_40px_rgba(255,255,255,0.5)]"
-        animate={
-          isIdle
-            ? { scale: [1, 1.04, 1], y: [0, -2, 0] }
-            : walking
-              ? { y: [0, -4, 0], rotate: [-4, 4, -4], scale: 1 + speed * 0.01 }
-              : { y: 0 }
-        }
-        transition={{
-          repeat: Infinity,
-          duration: walking ? walkDuration : 3,
-          ease: 'easeInOut',
-        }}
+        animate={headAnimate}
+        transition={{ repeat: Infinity, duration: walking ? walkDuration : 3, ease: 'easeInOut' }}
       >
         <div className="absolute top-4 flex gap-6 z-10">
           <BlinkingEye />
@@ -134,9 +79,9 @@ function StickmanSpriteComponent({
         >
           {teeth && (
             <div className="flex gap-0.5 pt-0.5">
-              {[1, 2, 3, 4, 5, 6].map((i) => (
+              {[1, 2, 3, 4, 5, 6].map((index) => (
                 <div
-                  key={i}
+                  key={index}
                   className="w-2 h-5 bg-slate-100 border-x border-b border-slate-300"
                   style={{ clipPath: 'polygon(50% 100%, 0 0, 100% 0)' }}
                 />
@@ -164,7 +109,7 @@ function StickmanSpriteComponent({
             key={leg.id}
             className="w-1 h-12 bg-white/90 origin-top shadow-[0_0_10px_rgba(255,255,255,0.5)]"
             animate={leg.animate}
-            transition={{ repeat: Infinity, duration: walking ? walkDuration : isIdle ? 3 : 0.4, ease: 'linear' }}
+            transition={{ repeat: Infinity, duration: legDuration, ease: 'linear' }}
           />
         ))}
       </div>
