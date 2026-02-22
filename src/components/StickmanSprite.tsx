@@ -13,6 +13,13 @@ interface StickmanSpriteProps {
   speed?: number;
 }
 
+const BLINK_ANIMATION = { scaleY: [1, 1, 0.1, 1, 1] };
+const BLINK_TRANSITION = { repeat: Infinity, duration: 3, times: [0, 0.8, 0.85, 0.9, 1] };
+
+function BlinkingEye() {
+  return <motion.div className="w-3.5 h-3.5 bg-slate-900 rounded-full shadow-sm" animate={BLINK_ANIMATION} transition={BLINK_TRANSITION} />;
+}
+
 function StickmanSpriteComponent({
   className,
   cheering = false,
@@ -23,48 +30,70 @@ function StickmanSpriteComponent({
   speed = 0,
 }: StickmanSpriteProps) {
   const isIdle = !walking && !cheering;
-
-  // Dynamic duration based on speed (0 to 10 scale)
   const walkDuration = Math.max(0.1, 0.5 - speed * 0.045);
-  // Lean angle increases with speed
   const leanAngle = walking ? Math.min(25, speed * 3) : 0;
-  // Squash and stretch based on speed
   const stretchY = walking ? 1 + speed * 0.02 : 1;
   const squashX = walking ? 1 - speed * 0.01 : 1;
+  const cycleDuration = cheering ? 0.4 : walking ? walkDuration : 3;
+
+  const rootAnimate = cheering
+    ? { y: [0, -40, 0], rotate: [0, -5, 5, 0], scaleX: 1, scaleY: 1 }
+    : walking
+      ? { rotate: leanAngle, y: [0, -6, 0], scaleX: squashX, scaleY: stretchY }
+      : { y: [0, -3, 0], rotate: 0, scaleX: [1, 1.02, 1], scaleY: [1, 0.98, 1] };
+  const rootTransition = cheering
+    ? { repeat: Infinity, duration: 0.4, ease: 'easeOut' }
+    : walking
+      ? {
+          rotate: { type: 'spring', stiffness: 150, damping: 12 },
+          y: { repeat: Infinity, duration: walkDuration, ease: 'easeInOut' },
+          scaleX: { duration: 0.2 },
+          scaleY: { duration: 0.2 },
+        }
+      : { repeat: Infinity, duration: 3, ease: 'easeInOut' };
+
+  const armAnimate = cheering
+    ? { rotate: [45, 135, 45], y: [-10, -20, -10] }
+    : walking
+      ? {
+          rotate: [-30 - speed * 5, 30 + speed * 5, -30 - speed * 5],
+          x: [-2 - speed, 2 + speed, -2 - speed],
+        }
+      : { rotate: [0, 8, 0], y: [0, -2, 0] };
+
+  const legs = [
+    {
+      id: 'left',
+      animate: walking
+        ? { rotate: [40 + speed * 4, -40 - speed * 4, 40 + speed * 4], y: [0, -4, 0] }
+        : cheering
+          ? { rotate: [10, -10, 10] }
+          : { rotate: [0, 2, 0], scaleY: [1, 0.95, 1] },
+    },
+    {
+      id: 'right',
+      animate: walking
+        ? { rotate: [-40 - speed * 4, 40 + speed * 4, -40 - speed * 4], y: [0, -4, 0] }
+        : cheering
+          ? { rotate: [-10, 10, -10] }
+          : { rotate: [0, -2, 0], scaleY: [1, 0.95, 1] },
+    },
+  ];
 
   return (
     <motion.div
       onClick={onClick}
       whileHover={{ scale: 1.05 }}
       className={cn('relative w-24 h-40 flex flex-col items-center group', className)}
-      animate={
-        cheering
-          ? { y: [0, -40, 0], rotate: [0, -5, 5, 0], scaleX: 1, scaleY: 1 }
-          : walking
-            ? { rotate: leanAngle, y: [0, -6, 0], scaleX: squashX, scaleY: stretchY }
-            : { y: [0, -3, 0], rotate: 0, scaleX: [1, 1.02, 1], scaleY: [1, 0.98, 1] }
-      }
-      transition={
-        cheering
-          ? { repeat: Infinity, duration: 0.4, ease: 'easeOut' }
-          : walking
-            ? {
-                rotate: { type: 'spring', stiffness: 150, damping: 12 },
-                y: { repeat: Infinity, duration: walkDuration, ease: 'easeInOut' },
-                scaleX: { duration: 0.2 },
-                scaleY: { duration: 0.2 },
-              }
-            : { repeat: Infinity, duration: 3, ease: 'easeInOut' }
-      }
+      animate={rootAnimate}
+      transition={rootTransition}
     >
-      {/* Surreal Aura */}
       <motion.div
         className="absolute inset-0 -m-4 bg-orange-300/20 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"
         animate={{ scale: [1, 1.2, 1] }}
         transition={{ repeat: Infinity, duration: 3 }}
       />
 
-      {/* Head */}
       <motion.div
         className="w-24 h-24 border-4 border-white rounded-full bg-white relative flex items-center justify-center overflow-hidden shadow-[0_0_40px_rgba(255,255,255,0.5)]"
         animate={
@@ -80,21 +109,11 @@ function StickmanSpriteComponent({
           ease: 'easeInOut',
         }}
       >
-        {/* Eyes */}
         <div className="absolute top-4 flex gap-6 z-10">
-          <motion.div
-            className="w-3.5 h-3.5 bg-slate-900 rounded-full shadow-sm"
-            animate={{ scaleY: [1, 1, 0.1, 1, 1] }}
-            transition={{ repeat: Infinity, duration: 3, times: [0, 0.8, 0.85, 0.9, 1] }}
-          />
-          <motion.div
-            className="w-3.5 h-3.5 bg-slate-900 rounded-full shadow-sm"
-            animate={{ scaleY: [1, 1, 0.1, 1, 1] }}
-            transition={{ repeat: Infinity, duration: 3, times: [0, 0.8, 0.85, 0.9, 1] }}
-          />
+          <BlinkingEye />
+          <BlinkingEye />
         </div>
 
-        {/* Blush */}
         <AnimatePresence>
           {blushing && (
             <motion.div
@@ -109,7 +128,6 @@ function StickmanSpriteComponent({
           )}
         </AnimatePresence>
 
-        {/* Mouth with teeth */}
         <motion.div
           className="absolute bottom-2 w-14 h-8 border-2 border-slate-900 rounded-b-2xl bg-white flex items-start justify-center overflow-hidden z-0"
           animate={cheering ? { height: [8, 16, 8] } : {}}
@@ -128,65 +146,27 @@ function StickmanSpriteComponent({
         </motion.div>
       </motion.div>
 
-      {/* Body */}
       <motion.div
         className="w-1 h-16 bg-white/90 shadow-[0_0_10px_rgba(255,255,255,0.5)]"
         animate={walking ? { rotate: [-2, 2, -2] } : {}}
         transition={{ repeat: Infinity, duration: walkDuration }}
       />
 
-      {/* Arms */}
       <motion.div
         className="absolute top-20 w-16 h-1 bg-white/90 origin-center shadow-[0_0_10px_rgba(255,255,255,0.5)]"
-        animate={
-          cheering
-            ? { rotate: [45, 135, 45], y: [-10, -20, -10] }
-            : walking
-              ? {
-                  rotate: [-30 - speed * 5, 30 + speed * 5, -30 - speed * 5],
-                  x: [-2 - speed, 2 + speed, -2 - speed],
-                }
-              : { rotate: [0, 8, 0], y: [0, -2, 0] }
-        }
-        transition={{
-          repeat: Infinity,
-          duration: cheering ? 0.4 : walking ? walkDuration : 3,
-          ease: 'linear',
-        }}
+        animate={armAnimate}
+        transition={{ repeat: Infinity, duration: cycleDuration, ease: 'linear' }}
       />
 
-      {/* Legs */}
       <div className="flex gap-8 -mt-1">
-        <motion.div
-          className="w-1 h-12 bg-white/90 origin-top shadow-[0_0_10px_rgba(255,255,255,0.5)]"
-          animate={
-            walking
-              ? { rotate: [40 + speed * 4, -40 - speed * 4, 40 + speed * 4], y: [0, -4, 0] }
-              : cheering
-                ? { rotate: [10, -10, 10] }
-                : { rotate: [0, 2, 0], scaleY: [1, 0.95, 1] }
-          }
-          transition={{
-            repeat: Infinity,
-            duration: walking ? walkDuration : isIdle ? 3 : 0.4,
-            ease: 'linear',
-          }}
-        />
-        <motion.div
-          className="w-1 h-12 bg-white/90 origin-top shadow-[0_0_10px_rgba(255,255,255,0.5)]"
-          animate={
-            walking
-              ? { rotate: [-40 - speed * 4, 40 + speed * 4, -40 - speed * 4], y: [0, -4, 0] }
-              : cheering
-                ? { rotate: [-10, 10, -10] }
-                : { rotate: [0, -2, 0], scaleY: [1, 0.95, 1] }
-          }
-          transition={{
-            repeat: Infinity,
-            duration: walking ? walkDuration : isIdle ? 3 : 0.4,
-            ease: 'linear',
-          }}
-        />
+        {legs.map((leg) => (
+          <motion.div
+            key={leg.id}
+            className="w-1 h-12 bg-white/90 origin-top shadow-[0_0_10px_rgba(255,255,255,0.5)]"
+            animate={leg.animate}
+            transition={{ repeat: Infinity, duration: walking ? walkDuration : isIdle ? 3 : 0.4, ease: 'linear' }}
+          />
+        ))}
       </div>
     </motion.div>
   );

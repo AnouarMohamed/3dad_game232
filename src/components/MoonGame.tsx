@@ -1,37 +1,60 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { Sparkles } from 'lucide-react';
-import confetti from 'canvas-confetti';
 
 import { MOON_POEMS } from '../constants/moonPoems';
+import { fireConfetti } from '../lib/confetti';
 import { cn } from '../lib/cn';
 import { StickmanSprite } from './StickmanSprite';
 
 type MoonGamePhase = 'CHOOSING' | 'MOVING' | 'REVEALING';
 
+const REVEAL_DELAY_MS = 1500;
+const CARD_OFFSET_X = 200;
+const CARD_COUNT = MOON_POEMS.length;
+const CARD_CENTER_INDEX = (CARD_COUNT - 1) / 2;
+
 export function MoonGame() {
   const [phase, setPhase] = useState<MoonGamePhase>('CHOOSING');
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [l3dadX, setL3dadX] = useState(0);
+  const revealTimeoutRef = useRef<number | null>(null);
 
-  const handleChoice = (index: number) => {
+  useEffect(
+    () => () => {
+      if (revealTimeoutRef.current !== null) {
+        clearTimeout(revealTimeoutRef.current);
+      }
+    },
+    [],
+  );
+
+  const revealChoice = useCallback(() => {
+    setPhase('REVEALING');
+    void fireConfetti({
+      particleCount: 40,
+      spread: 60,
+      origin: { y: 0.7 },
+      colors: ['#ff69b4', '#ff1493', '#ffc0cb'],
+    });
+  }, []);
+
+  const handleChoice = useCallback((index: number) => {
     setSelectedIndex(index);
     setPhase('MOVING');
+    setL3dadX((index - CARD_CENTER_INDEX) * CARD_OFFSET_X);
 
-    // Card positions: -200, 0, 200
-    const targetX = (index - 1) * 200;
-    setL3dadX(targetX);
+    if (revealTimeoutRef.current !== null) {
+      clearTimeout(revealTimeoutRef.current);
+    }
+    revealTimeoutRef.current = window.setTimeout(revealChoice, REVEAL_DELAY_MS);
+  }, [revealChoice]);
 
-    setTimeout(() => {
-      setPhase('REVEALING');
-      confetti({
-        particleCount: 40,
-        spread: 60,
-        origin: { y: 0.7 },
-        colors: ['#ff69b4', '#ff1493', '#ffc0cb'],
-      });
-    }, 1500);
-  };
+  const chooseAnother = useCallback(() => {
+    setPhase('CHOOSING');
+    setSelectedIndex(null);
+    setL3dadX(0);
+  }, []);
 
   return (
     <div className="flex flex-col items-center w-full">
@@ -48,7 +71,7 @@ export function MoonGame() {
       <div className="relative w-full h-[400px] flex flex-col items-center">
         {phase === 'CHOOSING' && (
           <div className="flex gap-6 md:gap-12 z-10">
-            {MOON_POEMS.map((_, i) => (
+            {Array.from({ length: CARD_COUNT }, (_, i) => (
               <motion.div
                 key={i}
                 whileHover={{ scale: 1.05, y: -10 }}
@@ -99,7 +122,7 @@ export function MoonGame() {
               {MOON_POEMS[selectedIndex].text}
             </p>
             <button
-              onClick={() => setPhase('CHOOSING')}
+              onClick={chooseAnother}
               className="mt-8 px-6 py-2 bg-white/10 hover:bg-white/20 rounded-full text-dream-pink font-bold transition-all text-lg"
             >
               Choose another?
