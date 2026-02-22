@@ -1,9 +1,9 @@
-import { ArrowRight } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 
 import { StickmanSprite } from '../../components/StickmanSprite';
 import { cn } from '../../lib/cn';
 import type { GameState } from '../../types/game';
+import { StartWelcome } from './StartWelcome';
 
 interface CharacterStageProps {
   gameState: GameState;
@@ -27,7 +27,12 @@ export function CharacterStage({
   onCharacterClick,
 }: CharacterStageProps) {
   return (
-    <div className="relative h-56 sm:h-64 w-full flex items-center justify-center mb-6 sm:mb-8">
+    <div
+      className={cn(
+        'relative w-full flex items-center justify-center',
+        gameState === 'START' ? 'min-h-[19rem] sm:min-h-[23rem] mb-8' : 'h-56 sm:h-64 mb-6 sm:mb-8',
+      )}
+    >
       {canSkipWalking && (
         <button
           onClick={onSkipWalking}
@@ -39,24 +44,7 @@ export function CharacterStage({
 
       <AnimatePresence mode="wait">
         {gameState === 'START' && (
-          <motion.button
-            key="start-btn"
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.8, opacity: 0 }}
-            onClick={onStartWalking}
-            className="group relative px-7 sm:px-9 py-3.5 sm:py-4 rounded-full font-bold text-lg sm:text-xl text-white transition-all hover:scale-[1.04] active:scale-95 bg-gradient-to-r from-orange-500 via-orange-400 to-pink-400 shadow-[0_10px_30px_rgba(251,146,60,0.45)]"
-          >
-            <span className="relative z-10 flex items-center gap-2 mb-1">
-              Feed l3dad <ArrowRight size={20} />
-            </span>
-            <span className="relative z-10 block text-[10px] uppercase tracking-[0.22em] text-orange-50/80">
-              Enter also works
-            </span>
-            <div className="absolute inset-0 rounded-full ring-1 ring-white/35" />
-            <div className="absolute inset-0 rounded-full bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
-            <div className="absolute inset-0 bg-orange-300 rounded-full blur-xl opacity-0 group-hover:opacity-50 transition-opacity" />
-          </motion.button>
+          <StartWelcome onStart={onStartWalking} />
         )}
 
         {showCharacter && (
