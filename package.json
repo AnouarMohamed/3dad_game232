@@ -7,6 +7,7 @@
     "dev": "vite --port=3000 --host=0.0.0.0",
     "build": "vite build",
     "preview": "vite preview",
+    "build:food-wasm": "rustup run stable rustc --edition=2021 --target wasm32-unknown-unknown --crate-type cdylib wasm/food-engine/food_engine.rs -C opt-level=z -C panic=abort -C codegen-units=1 -C strip=symbols -o src/wasm/food_engine/food_engine.wasm || \"%USERPROFILE%\\\\.cargo\\\\bin\\\\rustup.exe\" run stable rustc --edition=2021 --target wasm32-unknown-unknown --crate-type cdylib wasm/food-engine/food_engine.rs -C opt-level=z -C panic=abort -C codegen-units=1 -C strip=symbols -o src/wasm/food_engine/food_engine.wasm",
     "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\"",
     "lint": "tsc --noEmit"
   },

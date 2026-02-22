@@ -1,60 +1,149 @@
-import { motion } from 'motion/react';
-import { StickmanSprite } from './StickmanSprite';
-import { STICKMAN_Y, TARGET_SCORE, useFoodGameEngine } from './food-game/engine';
+import { useEffect, useState } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
+
+import { FOOD_EMOJIS } from '../constants/food';
+
+import { FoodGameArena } from './food-game/FoodGameArena';
+import { FoodGameProgress } from './food-game/FoodGameProgress';
+import { TARGET_SCORE, useFoodGameEngine } from './food-game/engine';
 
 interface FoodGameProps {
   onComplete: (score: number) => void;
 }
 
 export function FoodGame({ onComplete }: FoodGameProps) {
-  const { score, items, stickmanX, cursorSpeed, containerRef, handlePointerMove } = useFoodGameEngine(onComplete);
+  const {
+    score,
+    items,
+    stickmanX,
+    cursorSpeed,
+    isEngineReady,
+    loadFailed,
+    containerRef,
+    handlePointerMove,
+  } = useFoodGameEngine(onComplete);
+  const [featuredFoodIndex, setFeaturedFoodIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      setFeaturedFoodIndex((prev) => (prev + 1) % FOOD_EMOJIS.length);
+    }, 4200);
+    return () => clearInterval(interval);
+  }, []);
+
+  if (loadFailed) {
+    return (
+      <div className="glass rounded-3xl border border-rose-300/30 p-5 text-center text-rose-200">
+        <p className="font-semibold">Could not load the Rust food engine.</p>
+        <p className="text-sm mt-1 text-rose-100/80">Refresh once and try again.</p>
+      </div>
+    );
+  }
+
+  if (!isEngineReady) {
+    return (
+      <div className="glass rounded-3xl border border-white/15 p-5 text-center text-slate-200 space-y-2">
+        <p className="font-semibold text-lg">Loading snack engine...</p>
+        <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Preparing dream kitchen</p>
+      </div>
+    );
+  }
+
+  const remaining = Math.max(0, TARGET_SCORE - score);
+  const flowLabel = cursorSpeed > 2.8 ? 'Fast' : cursorSpeed > 1.2 ? 'Smooth' : 'Calm';
 
   return (
-    <div className="space-y-4 w-full">
-      <div className="w-full h-4 bg-slate-200 rounded-full overflow-hidden shadow-inner border border-slate-300">
+    <div className="relative space-y-4 w-full select-none">
+      <div className="absolute inset-x-8 sm:inset-x-14 -top-8 h-40 rounded-full bg-pink-400/15 blur-3xl pointer-events-none" />
+      <div className="absolute inset-x-16 sm:inset-x-28 -top-1 h-32 rounded-full bg-sky-400/12 blur-3xl pointer-events-none" />
+
+      <section className="relative glass rounded-3xl border border-white/15 p-4 sm:p-5 overflow-hidden">
         <motion.div
-          className="h-full bg-orange-500"
-          initial={{ width: 0 }}
-          animate={{ width: `${(score / TARGET_SCORE) * 100}%` }}
+          aria-hidden="true"
+          className="absolute -top-16 -left-10 w-44 h-44 rounded-full bg-pink-400/20 blur-3xl"
+          animate={{ x: [0, 20, 0], y: [0, 10, 0] }}
+          transition={{ repeat: Infinity, duration: 10, ease: 'easeInOut' }}
         />
-      </div>
+        <motion.div
+          aria-hidden="true"
+          className="absolute -bottom-20 -right-12 w-52 h-52 rounded-full bg-sky-400/20 blur-3xl"
+          animate={{ x: [0, -24, 0], y: [0, -12, 0] }}
+          transition={{ repeat: Infinity, duration: 12, ease: 'easeInOut' }}
+        />
 
-      <div
-        ref={containerRef}
+        <div className="relative z-10 flex items-start justify-between gap-4">
+          <div>
+            <p className="text-[10px] uppercase tracking-[0.28em] text-slate-400">Dream Kitchen Mode</p>
+            <h3 className="mt-1 text-xl sm:text-2xl font-semibold text-slate-100">Midnight Order Rush</h3>
+            <p className="mt-1 text-xs sm:text-sm text-slate-300/90">
+              Keep feeding l3dad before the snack stream fades out.
+            </p>
+          </div>
+          <div className="text-right">
+            <p className="text-[10px] uppercase tracking-[0.2em] text-slate-400">Goal</p>
+            <p className="text-2xl font-bold text-slate-100">
+              {score}
+              <span className="text-slate-400">/{TARGET_SCORE}</span>
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-4">
+          <FoodGameProgress score={score} />
+        </div>
+
+        <div className="relative mt-4 grid grid-cols-2 md:grid-cols-4 gap-2 text-xs sm:text-sm font-medium text-slate-200">
+          <div className="rounded-xl bg-black/30 border border-white/10 px-3 py-2 flex items-center justify-between">
+            <span className="uppercase tracking-[0.16em] text-[10px] text-slate-400">Featured</span>
+            <AnimatePresence mode="wait">
+              <motion.span
+                key={featuredFoodIndex}
+                initial={{ scale: 0.6, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.6, opacity: 0 }}
+                className="text-2xl"
+              >
+                {FOOD_EMOJIS[featuredFoodIndex]}
+              </motion.span>
+            </AnimatePresence>
+          </div>
+
+          <div className="rounded-xl bg-black/30 border border-white/10 px-3 py-2 flex items-center justify-between">
+            <span className="uppercase tracking-[0.16em] text-[10px] text-slate-400">Remaining</span>
+            <span className="text-amber-100 font-semibold">{remaining}</span>
+          </div>
+
+          <div className="rounded-xl bg-black/30 border border-white/10 px-3 py-2 flex items-center justify-between">
+            <span className="uppercase tracking-[0.16em] text-[10px] text-slate-400">In Air</span>
+            <span className="text-pink-200 font-semibold">{items.length}</span>
+          </div>
+
+          <div className="rounded-xl bg-black/30 border border-white/10 px-3 py-2 flex items-center justify-between">
+            <span className="uppercase tracking-[0.16em] text-[10px] text-slate-400">Flow</span>
+            <span className="text-cyan-200 font-semibold">{flowLabel}</span>
+          </div>
+        </div>
+      </section>
+
+      <FoodGameArena
+        score={score}
+        items={items}
+        stickmanX={stickmanX}
+        cursorSpeed={cursorSpeed}
+        containerRef={containerRef}
         onPointerMove={handlePointerMove}
-        onPointerDown={handlePointerMove}
-        className="relative w-full h-96 glass rounded-3xl overflow-hidden cursor-crosshair touch-none shadow-inner"
-      >
-        <div className="absolute top-4 left-4 font-bold text-slate-600 z-10 flex items-center gap-2 bg-white/40 backdrop-blur-md px-3 py-1 rounded-full shadow-sm border border-white/20">
-          {'\u{1F354} Snacks:'} {score} / {TARGET_SCORE}
-        </div>
+      />
 
-        <div
-          className="absolute pointer-events-none transition-[left] duration-75 ease-out"
-          style={{ left: `${stickmanX}%`, top: `${STICKMAN_Y}%`, transform: 'translate(-50%, -50%)' }}
-        >
-          <StickmanSprite walking={cursorSpeed > 0.15} speed={cursorSpeed} className="scale-75" />
-        </div>
-
-        {items.map((item) => (
-          <div
-            key={item.id}
-            className="absolute text-4xl pointer-events-none"
-            style={{
-              left: `${item.x}%`,
-              top: `${item.y}%`,
-              transform: `translate(-50%, -50%) rotate(${item.rotation}deg)`,
-            }}
-          >
-            {item.emoji}
-          </div>
-        ))}
-
-        {score === 0 && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-400 pointer-events-none">
-            <p className="font-sans font-semibold tracking-wide text-xl md:text-2xl">Move your pointer to feed him!</p>
-          </div>
-        )}
+      <div className="glass rounded-2xl border border-white/15 px-3 py-2 flex flex-wrap items-center justify-between gap-2 text-xs sm:text-sm text-slate-300">
+        <span>
+          Goal: <strong className="text-slate-100">{TARGET_SCORE}</strong> snacks
+        </span>
+        <span>
+          Controls: <strong className="text-slate-100">pointer or A / D</strong>
+        </span>
+        <span>
+          Style: <strong className="text-pink-200">dreamy neon</strong>
+        </span>
       </div>
     </div>
   );
