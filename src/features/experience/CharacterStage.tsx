@@ -8,22 +8,35 @@ import type { GameState } from '../../types/game';
 interface CharacterStageProps {
   gameState: GameState;
   showCharacter: boolean;
+  canSkipWalking: boolean;
   blushLevel: number;
   l3dadThought: string | null;
   onStartWalking: () => void;
+  onSkipWalking: () => void;
   onCharacterClick: () => void;
 }
 
 export function CharacterStage({
   gameState,
   showCharacter,
+  canSkipWalking,
   blushLevel,
   l3dadThought,
   onStartWalking,
+  onSkipWalking,
   onCharacterClick,
 }: CharacterStageProps) {
   return (
-    <div className="relative h-64 w-full flex items-center justify-center mb-8">
+    <div className="relative h-56 sm:h-64 w-full flex items-center justify-center mb-6 sm:mb-8">
+      {canSkipWalking && (
+        <button
+          onClick={onSkipWalking}
+          className="absolute right-0 top-0 z-30 px-4 py-2 text-[10px] uppercase tracking-[0.22em] text-slate-200 bg-black/30 backdrop-blur-md hover:bg-white/15 border border-white/20 rounded-full transition-colors"
+        >
+          Skip intro
+        </button>
+      )}
+
       <AnimatePresence mode="wait">
         {gameState === 'START' && (
           <motion.button
@@ -32,12 +45,17 @@ export function CharacterStage({
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.8, opacity: 0 }}
             onClick={onStartWalking}
-            className="group relative px-8 py-4 bg-orange-500 text-white rounded-full font-bold text-xl shadow-lg shadow-orange-200 hover:bg-orange-600 transition-all hover:scale-105 active:scale-95"
+            className="group relative px-7 sm:px-9 py-3.5 sm:py-4 rounded-full font-bold text-lg sm:text-xl text-white transition-all hover:scale-[1.04] active:scale-95 bg-gradient-to-r from-orange-500 via-orange-400 to-pink-400 shadow-[0_10px_30px_rgba(251,146,60,0.45)]"
           >
-            <span className="relative z-10 flex items-center gap-2">
+            <span className="relative z-10 flex items-center gap-2 mb-1">
               Feed l3dad <ArrowRight size={20} />
             </span>
-            <div className="absolute inset-0 bg-orange-400 rounded-full blur-lg opacity-0 group-hover:opacity-50 transition-opacity" />
+            <span className="relative z-10 block text-[10px] uppercase tracking-[0.22em] text-orange-50/80">
+              Enter also works
+            </span>
+            <div className="absolute inset-0 rounded-full ring-1 ring-white/35" />
+            <div className="absolute inset-0 rounded-full bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="absolute inset-0 bg-orange-300 rounded-full blur-xl opacity-0 group-hover:opacity-50 transition-opacity" />
           </motion.button>
         )}
 
