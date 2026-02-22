@@ -33,35 +33,26 @@ export function StartWelcome({ onStart }: StartWelcomeProps) {
         <div>
           <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-black/30 px-3 py-1 text-[10px] uppercase tracking-[0.24em] text-slate-300">
             <Sparkles size={14} className="text-pink-200" />
-            Welcome Scene
+            A little surprise
           </div>
           <h2 className="mt-3 text-3xl leading-tight sm:text-4xl font-bold tracking-tight text-white">
-            A tiny world built just for you
+            mini game for my major goat
           </h2>
-          <p className="mt-3 text-sm sm:text-base text-slate-300/90 leading-relaxed">
-            Step into the dreamy mini-game and start the little surprise.
+          <p className="mt-2 text-2xl sm:text-3xl text-slate-300/90 font-handwriting">
+            ilysm
           </p>
-
-          <div className="mt-5 flex flex-wrap gap-2">
-            <span className="rounded-full border border-white/15 bg-white/8 px-3 py-1 text-[11px] uppercase tracking-[0.16em] text-slate-300">
-              Rust-powered food game
-            </span>
-            <span className="rounded-full border border-white/15 bg-white/8 px-3 py-1 text-[11px] uppercase tracking-[0.16em] text-slate-300">
-              poem ending
-            </span>
-          </div>
 
           <button
             type="button"
             onClick={onStart}
             className="mt-6 group relative inline-flex items-center gap-2 rounded-full border border-white/30 bg-gradient-to-r from-[#ff8fc6] via-[#ffb38a] to-[#8ecbff] px-6 py-3 text-sm sm:text-base font-bold text-slate-950 shadow-[0_14px_36px_rgba(252,176,121,0.45)] transition-transform hover:scale-[1.03] active:scale-[0.98]"
           >
-            <span className="relative z-10">Start the surprise</span>
+            <span className="relative z-10">Continue</span>
             <ArrowRight size={18} className="relative z-10 transition-transform group-hover:translate-x-0.5" />
             <span className="pointer-events-none absolute inset-0 rounded-full bg-white/30 opacity-0 transition-opacity group-hover:opacity-100" />
           </button>
 
-          <p className="mt-2 text-[11px] uppercase tracking-[0.24em] text-slate-400">Press Enter to begin</p>
+          <p className="mt-2 text-[11px] uppercase tracking-[0.24em] text-slate-400">Press Enter to continue</p>
         </div>
 
         <motion.div
