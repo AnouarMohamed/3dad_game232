@@ -12,6 +12,7 @@ interface AtmosphereBackgroundProps {
   bgY3: MotionValue<number>;
   orbConfigs: OrbConfig[];
   particleConfigs: ParticleConfig[];
+  liteMode: boolean;
 }
 
 export function AtmosphereBackground({
@@ -23,23 +24,39 @@ export function AtmosphereBackground({
   bgY3,
   orbConfigs,
   particleConfigs,
+  liteMode,
 }: AtmosphereBackgroundProps) {
   return (
     <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
       <div className="absolute inset-0 bg-[#050505]" />
 
-      <motion.div
-        style={{ x: bgX1, y: bgY1 }}
-        animate={{ scale: [1, 1.3, 1], opacity: [0.1, 0.2, 0.1] }}
-        transition={{ duration: 15, repeat: Infinity, ease: 'linear' }}
-        className="absolute top-0 right-0 w-[70%] h-[70%] rounded-full bg-dream-purple/20 blur-[150px]"
-      />
-      <motion.div
-        style={{ x: bgX2, y: bgY2 }}
-        animate={{ scale: [1.3, 1, 1.3], opacity: [0.1, 0.15, 0.1] }}
-        transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
-        className="absolute bottom-0 left-0 w-[60%] h-[60%] rounded-full bg-dream-blue/10 blur-[120px]"
-      />
+      {liteMode ? (
+        <>
+          <div
+            style={{ transform: 'translate3d(0,0,0)' }}
+            className="absolute top-0 right-0 w-[60%] h-[60%] rounded-full bg-dream-purple/12 blur-[90px]"
+          />
+          <div
+            style={{ transform: 'translate3d(0,0,0)' }}
+            className="absolute bottom-0 left-0 w-[50%] h-[50%] rounded-full bg-dream-blue/8 blur-[80px]"
+          />
+        </>
+      ) : (
+        <>
+          <motion.div
+            style={{ x: bgX1, y: bgY1 }}
+            animate={{ scale: [1, 1.3, 1], opacity: [0.1, 0.2, 0.1] }}
+            transition={{ duration: 15, repeat: Infinity, ease: 'linear' }}
+            className="absolute top-0 right-0 w-[70%] h-[70%] rounded-full bg-dream-purple/20 blur-[150px]"
+          />
+          <motion.div
+            style={{ x: bgX2, y: bgY2 }}
+            animate={{ scale: [1.3, 1, 1.3], opacity: [0.1, 0.15, 0.1] }}
+            transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+            className="absolute bottom-0 left-0 w-[60%] h-[60%] rounded-full bg-dream-blue/10 blur-[120px]"
+          />
+        </>
+      )}
 
       {orbConfigs.map((orbConfig) => (
         <motion.div
@@ -52,10 +69,18 @@ export function AtmosphereBackground({
             left: orbConfig.leftStops,
             top: orbConfig.topStops,
             scale: [1, 1.35, 0.9, 1.1, 1],
-            opacity: [0.04, 0.09, 0.04],
+            opacity: liteMode ? [0.025, 0.05, 0.025] : [0.04, 0.09, 0.04],
           }}
-          transition={{ duration: orbConfig.duration, repeat: Infinity, ease: 'easeInOut' }}
-          className={cn('absolute rounded-full blur-[90px] pointer-events-none', orbConfig.className)}
+          transition={{
+            duration: liteMode ? orbConfig.duration + 14 : orbConfig.duration,
+            repeat: Infinity,
+            ease: 'easeInOut',
+          }}
+          className={cn(
+            'absolute rounded-full pointer-events-none',
+            liteMode ? 'blur-[60px]' : 'blur-[90px]',
+            orbConfig.className,
+          )}
         />
       ))}
 
@@ -71,9 +96,13 @@ export function AtmosphereBackground({
           animate={{
             top: [null, '-=120', '+=50', '-=120'],
             left: [null, '+=24', '-=24', '+=24'],
-            opacity: [null, 0.45, 0.08, 0.45],
+            opacity: liteMode ? [null, 0.2, 0.03, 0.2] : [null, 0.45, 0.08, 0.45],
           }}
-          transition={{ duration: particleConfig.duration, repeat: Infinity, ease: 'easeInOut' }}
+          transition={{
+            duration: liteMode ? particleConfig.duration + 6 : particleConfig.duration,
+            repeat: Infinity,
+            ease: 'easeInOut',
+          }}
           className="absolute w-0.5 h-0.5 bg-white rounded-full shadow-[0_0_8px_white]"
         />
       ))}

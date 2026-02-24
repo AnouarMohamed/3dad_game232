@@ -8,6 +8,7 @@ interface ManagedTimeout {
 }
 
 export function useManagedTimeout(): ManagedTimeout {
+  // Single mutable timer handle that survives renders.
   const timeoutRef = useRef<number | null>(null);
 
   const clear = useCallback(() => {
@@ -20,12 +21,14 @@ export function useManagedTimeout(): ManagedTimeout {
 
   const set = useCallback(
     (handler: TimeoutHandler, delayMs: number) => {
+      // Replace any existing timer to keep behavior deterministic.
       clear();
       timeoutRef.current = window.setTimeout(handler, delayMs);
     },
     [clear],
   );
 
+  // Always clear on unmount to avoid orphaned callbacks.
   useEffect(() => clear, [clear]);
 
   return { set, clear };

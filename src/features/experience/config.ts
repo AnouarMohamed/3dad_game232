@@ -66,8 +66,8 @@ export const FLOATING_DECORATIONS: readonly FloatingDecoration[] = [
   },
 ];
 
-export const createOrbConfigs = (): OrbConfig[] =>
-  Array.from({ length: 2 }, (_, index) => ({
+export const createOrbConfigs = (count = 2): OrbConfig[] =>
+  Array.from({ length: count }, (_, index) => ({
     id: `orb-${index}`,
     layer: index % 2 === 0 ? 'mid' : 'front',
     className:
@@ -79,8 +79,8 @@ export const createOrbConfigs = (): OrbConfig[] =>
     duration: 34 + index * 12,
   }));
 
-export const createParticleConfigs = (): ParticleConfig[] =>
-  Array.from({ length: 10 }, (_, index) => ({
+export const createParticleConfigs = (count = 10): ParticleConfig[] =>
+  Array.from({ length: count }, (_, index) => ({
     id: index,
     left: `${Math.random() * 100}%`,
     top: `${Math.random() * 100}%`,

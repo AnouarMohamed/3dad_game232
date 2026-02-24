@@ -17,6 +17,7 @@ interface GamePanelProps {
   activeLine: DialogueLine | null;
   onNextDialogue: () => void;
   onGameComplete: () => void;
+  liteMode: boolean;
 }
 
 export function GamePanel({
@@ -26,6 +27,7 @@ export function GamePanel({
   activeLine,
   onNextDialogue,
   onGameComplete,
+  liteMode,
 }: GamePanelProps) {
   return (
     <div className="w-full max-w-lg min-h-[200px]">
@@ -46,7 +48,7 @@ export function GamePanel({
             className="w-full"
           >
             <Suspense fallback={<StageFallback message="Loading snack game..." />}>
-              <FoodGame onComplete={onGameComplete} />
+              <FoodGame onComplete={onGameComplete} liteMode={liteMode} />
             </Suspense>
           </motion.div>
         )}

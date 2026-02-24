@@ -9,9 +9,10 @@ import { TARGET_SCORE, useFoodGameEngine } from './food-game/engine';
 
 interface FoodGameProps {
   onComplete: (score: number) => void;
+  liteMode: boolean;
 }
 
-export function FoodGame({ onComplete }: FoodGameProps) {
+export function FoodGame({ onComplete, liteMode }: FoodGameProps) {
   const {
     score,
     items,
@@ -21,7 +22,7 @@ export function FoodGame({ onComplete }: FoodGameProps) {
     loadFailed,
     containerRef,
     handlePointerMove,
-  } = useFoodGameEngine(onComplete);
+  } = useFoodGameEngine(onComplete, { liteMode });
   const [featuredFoodIndex, setFeaturedFoodIndex] = useState(0);
 
   useEffect(() => {
@@ -132,6 +133,7 @@ export function FoodGame({ onComplete }: FoodGameProps) {
         cursorSpeed={cursorSpeed}
         containerRef={containerRef}
         onPointerMove={handlePointerMove}
+        liteMode={liteMode}
       />
 
       <div className="glass rounded-2xl border border-white/15 px-3 py-2 flex flex-wrap items-center justify-between gap-2 text-xs sm:text-sm text-slate-300">

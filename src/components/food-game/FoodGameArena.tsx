@@ -13,6 +13,7 @@ interface FoodGameArenaProps {
   cursorSpeed: number;
   containerRef: RefObject<HTMLDivElement | null>;
   onPointerMove: (event: ReactPointerEvent<HTMLDivElement>) => void;
+  liteMode: boolean;
 }
 
 export function FoodGameArena({
@@ -22,6 +23,7 @@ export function FoodGameArena({
   cursorSpeed,
   containerRef,
   onPointerMove,
+  liteMode,
 }: FoodGameArenaProps) {
   return (
     <div
@@ -51,13 +53,21 @@ export function FoodGameArena({
         Catch line
       </div>
 
-      <motion.div
-        aria-hidden="true"
-        className="absolute pointer-events-none h-28 w-28 rounded-full bg-pink-300/25 blur-2xl"
-        animate={{ left: [`${stickmanX - 6}%`, `${stickmanX + 2}%`, `${stickmanX - 6}%`] }}
-        transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }}
-        style={{ top: `${STICKMAN_Y - 2}%` }}
-      />
+      {liteMode ? (
+        <div
+          aria-hidden="true"
+          className="absolute pointer-events-none h-20 w-20 rounded-full bg-pink-300/20 blur-xl"
+          style={{ top: `${STICKMAN_Y - 2}%`, left: `${stickmanX - 2}%` }}
+        />
+      ) : (
+        <motion.div
+          aria-hidden="true"
+          className="absolute pointer-events-none h-28 w-28 rounded-full bg-pink-300/25 blur-2xl"
+          animate={{ left: [`${stickmanX - 6}%`, `${stickmanX + 2}%`, `${stickmanX - 6}%`] }}
+          transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }}
+          style={{ top: `${STICKMAN_Y - 2}%` }}
+        />
+      )}
 
       <div
         className="absolute pointer-events-none transition-[left] duration-75 ease-out"

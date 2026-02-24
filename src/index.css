@@ -62,3 +62,17 @@
   33% { transform: translateY(-15px) rotate(2deg); }
   66% { transform: translateY(5px) rotate(-2deg); }
 }
+
+@media (pointer: coarse), (max-width: 768px), (prefers-reduced-motion: reduce) {
+  body::before {
+    display: none;
+  }
+
+  .glass {
+    backdrop-filter: blur(10px) !important;
+  }
+
+  .animate-float {
+    animation-duration: 10s;
+  }
+}

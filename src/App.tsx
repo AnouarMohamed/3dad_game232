@@ -16,6 +16,7 @@ import {
   useGameFlow,
   useParallax,
 } from './features/experience';
+import { usePerformanceMode } from './lib/usePerformanceMode';
 
 const MoonGame = lazy(async () => {
   const mod = await import('./components/MoonGame');
@@ -24,6 +25,7 @@ const MoonGame = lazy(async () => {
 
 export default function App() {
   const [isMuted, setIsMuted] = useState(false);
+  const { isLiteMode } = usePerformanceMode();
   const {
     gameState,
     dialogueIndex,
@@ -51,13 +53,14 @@ export default function App() {
     bgY3,
     orbConfigs,
     particleConfigs,
-  } = useParallax(gameState !== 'MINIGAME');
+  } = useParallax(gameState !== 'MINIGAME', isLiteMode);
 
   const toggleMuted = () => setIsMuted((prev) => !prev);
+  const shouldTrackMouse = gameState !== 'MINIGAME' && !isLiteMode;
 
   return (
     <div
-      onMouseMove={handleGlobalMouseMove}
+      onMouseMove={shouldTrackMouse ? handleGlobalMouseMove : undefined}
       className="min-h-screen bg-[#050505] font-sans text-slate-200 overflow-x-hidden selection:bg-purple-900/50 relative"
     >
       <AtmosphereBackground
@@ -69,8 +72,9 @@ export default function App() {
         bgY3={bgY3}
         orbConfigs={orbConfigs}
         particleConfigs={particleConfigs}
+        liteMode={isLiteMode}
       />
-      <FloatingDecorations />
+      <FloatingDecorations liteMode={isLiteMode} />
 
       <main className="relative z-10 max-w-2xl mx-auto px-4 sm:px-6 pt-14 sm:pt-20 pb-[calc(2.5rem+env(safe-area-inset-bottom))] flex flex-col items-center min-h-screen">
         <GameHeader />
@@ -99,6 +103,7 @@ export default function App() {
                 activeLine={activeLine}
                 onNextDialogue={nextDialogue}
                 onGameComplete={handleGameComplete}
+                liteMode={isLiteMode}
               />
             </>
           )}
